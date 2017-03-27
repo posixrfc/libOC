@@ -20,6 +20,8 @@
 		D618C0AF1E89199800195545 /* UIDispatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0AD1E89199800195545 /* UIDispatcher.m */; };
 		D618C0B31E891E4A00195545 /* OCUniversal.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0B11E891E4A00195545 /* OCUniversal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D618C0B41E891E4A00195545 /* OCUniversal.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0B21E891E4A00195545 /* OCUniversal.m */; };
+		D65335C21E893B4E00ECF5C1 /* UIColor+Ext.h in Headers */ = {isa = PBXBuildFile; fileRef = D65335C01E893B4E00ECF5C1 /* UIColor+Ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D65335C31E893B4E00ECF5C1 /* UIColor+Ext.m in Sources */ = {isa = PBXBuildFile; fileRef = D65335C11E893B4E00ECF5C1 /* UIColor+Ext.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +40,8 @@
 		D618C0AD1E89199800195545 /* UIDispatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIDispatcher.m; sourceTree = "<group>"; };
 		D618C0B11E891E4A00195545 /* OCUniversal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCUniversal.h; sourceTree = "<group>"; };
 		D618C0B21E891E4A00195545 /* OCUniversal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OCUniversal.m; sourceTree = "<group>"; };
+		D65335C01E893B4E00ECF5C1 /* UIColor+Ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Ext.h"; sourceTree = "<group>"; };
+		D65335C11E893B4E00ECF5C1 /* UIColor+Ext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+Ext.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,7 @@
 		D618C07D1E890E8500195545 /* libOC */ = {
 			isa = PBXGroup;
 			children = (
+				D65335BE1E893B4E00ECF5C1 /* Category */,
 				D618C0B01E891E4A00195545 /* OCUniversal */,
 				D618C0AB1E89199800195545 /* UIDispatcher */,
 				D618C09C1E8912C100195545 /* NSCachePool */,
@@ -126,6 +131,23 @@
 			path = OCUniversal;
 			sourceTree = "<group>";
 		};
+		D65335BE1E893B4E00ECF5C1 /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				D65335BF1E893B4E00ECF5C1 /* UIColor */,
+			);
+			path = Category;
+			sourceTree = "<group>";
+		};
+		D65335BF1E893B4E00ECF5C1 /* UIColor */ = {
+			isa = PBXGroup;
+			children = (
+				D65335C01E893B4E00ECF5C1 /* UIColor+Ext.h */,
+				D65335C11E893B4E00ECF5C1 /* UIColor+Ext.m */,
+			);
+			path = UIColor;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -133,6 +155,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D65335C21E893B4E00ECF5C1 /* UIColor+Ext.h in Headers */,
 				D618C09F1E8912C100195545 /* NSCachePool.h in Headers */,
 				D618C0AE1E89199800195545 /* UIDispatcher.h in Headers */,
 				D618C0B31E891E4A00195545 /* OCUniversal.h in Headers */,
@@ -210,6 +233,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D618C0A01E8912C100195545 /* NSCachePool.m in Sources */,
+				D65335C31E893B4E00ECF5C1 /* UIColor+Ext.m in Sources */,
 				D618C0B41E891E4A00195545 /* OCUniversal.m in Sources */,
 				D618C0AF1E89199800195545 /* UIDispatcher.m in Sources */,
 			);
