@@ -16,9 +16,9 @@
 		D618C0981E8910E700195545 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D618C0971E8910E700195545 /* CFNetwork.framework */; };
 		D618C09F1E8912C100195545 /* NSCachePool.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C09D1E8912C100195545 /* NSCachePool.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D618C0A01E8912C100195545 /* NSCachePool.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C09E1E8912C100195545 /* NSCachePool.m */; };
-		D618C0AE1E89199800195545 /* UIDispatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0AC1E89199800195545 /* UIDispatcher.h */; };
+		D618C0AE1E89199800195545 /* UIDispatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0AC1E89199800195545 /* UIDispatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D618C0AF1E89199800195545 /* UIDispatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0AD1E89199800195545 /* UIDispatcher.m */; };
-		D618C0B31E891E4A00195545 /* OCUniversal.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0B11E891E4A00195545 /* OCUniversal.h */; };
+		D618C0B31E891E4A00195545 /* OCUniversal.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0B11E891E4A00195545 /* OCUniversal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D618C0B41E891E4A00195545 /* OCUniversal.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0B21E891E4A00195545 /* OCUniversal.m */; };
 /* End PBXBuildFile section */
 
