@@ -80,8 +80,6 @@
 				D618C0B01E891E4A00195545 /* OCUniversal */,
 				D618C0AB1E89199800195545 /* UIDispatcher */,
 				D618C09C1E8912C100195545 /* NSCachePool */,
-				D618C09B1E8912B900195545 /* Extension */,
-				D618C09A1E8912B200195545 /* Category */,
 				D618C07E1E890E8500195545 /* libOC.h */,
 				D618C07F1E890E8500195545 /* Info.plist */,
 			);
@@ -99,20 +97,6 @@
 				D618C08D1E8910BD00195545 /* libsqlite3.0.tbd */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		D618C09A1E8912B200195545 /* Category */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Category;
-			sourceTree = "<group>";
-		};
-		D618C09B1E8912B900195545 /* Extension */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Extension;
 			sourceTree = "<group>";
 		};
 		D618C09C1E8912C100195545 /* NSCachePool */ = {
