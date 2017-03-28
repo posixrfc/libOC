@@ -4,7 +4,6 @@
 #import <pthread/pthread.h>
 #import <string.h>
 #import "OCUniversal.h"
-#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 __attribute__((objc_subclassing_restricted))
@@ -31,7 +30,7 @@ __attribute__((objc_subclassing_restricted))
 + (void)diskClearPool;
 + (void)diskClearGroup:(nullable NSString *)ID;
 + (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID;
-+ (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID duration:(signed long int)seconds;
++ (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID duration:(signed long long int)seconds;
 + (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID expireDate:(nullable NSDate *)expire;
 + (nullable id<NSCoding>)diskValueWithKey:(NSString *)key inGroup:(nullable NSString *)ID;
 + (void)diskRemoveValueWithKey:(NSString *)key inGroup:(nullable NSString *)ID;

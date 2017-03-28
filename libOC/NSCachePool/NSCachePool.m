@@ -313,7 +313,7 @@ static NSMutableArray<NSString *> *tables;
 {
     [self diskSetValue:value withKey:key inGroup:ID duration:LONG_LONG_MAX];
 }
-+ (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID duration:(signed long int)seconds
++ (void)diskSetValue:(id<NSCoding>)value withKey:(NSString *)key inGroup:(nullable NSString *)ID duration:(signed long long int)seconds
 {
     if (seconds <= 0) {
         return;
@@ -538,8 +538,8 @@ static NSMutableArray<NSString *> *tables;
         throwExecption;
     }
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self selector:@selector(appWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
-    [center addObserver:self selector:@selector(appBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [center addObserver:self selector:@selector(appWillResignActive) name:@"UIApplicationWillResignActiveNotification" object:nil];
+    [center addObserver:self selector:@selector(appBecomeActive) name:@"UIApplicationDidBecomeActiveNotification" object:nil];
     
     sqlite3_stmt *stmt = NULL;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, "select tbl_name from sqlite_master where type = 'table'", -1, &stmt, NULL)) {
