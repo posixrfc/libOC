@@ -12,7 +12,6 @@ static NSMutableArray<NSString *> *tables;
 
 @implementation NSCachePool
 
-+ (void)prepare{}
 + (nullable NSArray<id<NSCopying>> *)memoryGroups
 {
     return [pool allKeys];
@@ -179,7 +178,8 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
     }
-    NSMutableArray<NSString *> *keys = [NSMutableArray new];
+    NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
+    NSMutableArray<NSNumber *> *expireKeys = [NSMutableArray new];
     const sqlite3_int64 currentTimestamp = [[NSDate date] timeIntervalSince1970];
     while (SQLITE_ROW == sqlite3_step(stmt))
     {
@@ -188,22 +188,35 @@ static NSMutableArray<NSString *> *tables;
         sqlite3_int64 queryTimestamp = sqlite3_column_int64(stmt, 1);
         if (queryTimestamp > currentTimestamp)
         {
-            [keys addObject:key];
-             continue;
+            [validKeys addObject:key];
         }
-        SQL = [NSString stringWithFormat:@"delete from `%@` where path = '%s'", group_id, text];
-        pthread_mutex_lock(&mutex);
-        if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
-            throwExecption;
+        else
+        {
+            [expireKeys addObject:key];
         }
-        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:key];
-        [filemgr removeItemAtPath:SQL error:NULL];
-        pthread_mutex_unlock(&mutex);
     }
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
     }
-    return 0 == keys.count ? nil : keys;
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"delete from `%@` where path in (", group_id];
+    pthread_mutex_lock(&mutex);
+    for (long i = 0, len = expireKeys.count; i < len; i++)
+    {
+        [sql appendFormat:@", '%@'", expireKeys[i]];
+        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:expireKeys[i]];
+        if ([filemgr fileExistsAtPath:SQL]) {
+            [filemgr removeItemAtPath:SQL error:NULL];
+        }
+    }
+    if (![sql hasSuffix:@"("])
+    {
+        [sql appendString:@")"];
+        if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
+            throwExecption;
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+    return 0 == validKeys.count ? nil : validKeys;
 }
 + (nullable NSArray<id<NSCoding>> *)diskValuesInGroup:(nullable NSString *)ID
 {
@@ -226,7 +239,8 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
     }
-    NSMutableArray<NSString *> *keys = [NSMutableArray new];
+    NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
+    NSMutableArray<NSString *> *expirekeys = [NSMutableArray new];
     const sqlite3_int64 currentTimestamp = [[NSDate date] timeIntervalSince1970];
     while (SQLITE_ROW == sqlite3_step(stmt))
     {
@@ -235,29 +249,42 @@ static NSMutableArray<NSString *> *tables;
         sqlite3_int64 queryTimestamp = sqlite3_column_int64(stmt, 1);
         if (queryTimestamp > currentTimestamp)
         {
-            [keys addObject:key];
-            continue;
+            [validKeys addObject:key];
         }
-        SQL = [NSString stringWithFormat:@"delete from `%@` where path = '%s'", group_id, text];
-        pthread_mutex_lock(&mutex);
-        if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
-            throwExecption;
+        else
+        {
+            [expirekeys addObject:key];
         }
-        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:key];
-        [filemgr removeItemAtPath:SQL error:NULL];
-        pthread_mutex_unlock(&mutex);
     }
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
     }
-    long key_count = keys.count;
+    NSMutableString *sql = [NSString stringWithFormat:@"delete from `%@` where path in (", group_id];
+    pthread_mutex_lock(&mutex);
+    for (long i = 0, len = expirekeys.count; i < len; i++)
+    {
+        [sql appendFormat:@", '%@'", expirekeys[i]];
+        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:expirekeys[i]];
+        if ([filemgr fileExistsAtPath:SQL]) {
+            [filemgr removeItemAtPath:SQL error:NULL];
+        }
+    }
+    if (![sql hasSuffix:@"("])
+    {
+        [sql appendString:@")"];
+        if (SQLITE_OK != sqlite3_exec(dbHandler, [sql UTF8String], NULL, NULL, NULL)) {
+            throwExecption;
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+    long key_count = validKeys.count;
     if (0 == key_count) {
         return nil;
     }
     NSMutableArray<id<NSCoding>> *values = [NSMutableArray arrayWithCapacity:key_count];
     for (long i = 0; i < key_count; i++)
     {
-        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:keys[i]];
+        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:validKeys[i]];
         [values addObject:[NSKeyedUnarchiver unarchiveObjectWithFile:SQL]];
     }
     return values;
@@ -265,8 +292,14 @@ static NSMutableArray<NSString *> *tables;
 + (void)diskClearPool
 {
     pthread_mutex_lock(&mutex);
-    if ([filemgr removeItemAtPath:dataDir error:NULL]) {
+    if (SQLITE_OK != sqlite3_close(dbHandler)) {
         throwExecption;
+    }
+    if ([filemgr fileExistsAtPath:dataDir])
+    {
+        if (![filemgr removeItemAtPath:dataDir error:NULL]) {
+            throwExecption;
+        }
     }
     if ([filemgr createDirectoryAtPath:dataDir withIntermediateDirectories:YES attributes:nil error:NULL]) {
         throwExecption;
@@ -275,6 +308,9 @@ static NSMutableArray<NSString *> *tables;
         throwExecption;
     }
     [tables removeAllObjects];
+    if (SQLITE_OK != sqlite3_open([dbPath UTF8String], &dbHandler)) {
+        throwExecption;
+    }
     pthread_mutex_unlock(&mutex);
 }
 + (void)diskClearGroup:(nullable NSString *)ID
@@ -295,15 +331,12 @@ static NSMutableArray<NSString *> *tables;
         return;
     }
     NSString *tableFolder = [dataDir stringByAppendingPathComponent:group_id];
-    if (![filemgr fileExistsAtPath:tableFolder]) {
-        return;
+    pthread_mutex_lock(&mutex);
+    if ([filemgr fileExistsAtPath:tableFolder]) {
+        [filemgr removeItemAtPath:tableFolder error:NULL];
     }
     NSString *SQL = [NSString stringWithFormat:@"drop table `%@`", group_id];
-    pthread_mutex_lock(&mutex);
     if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
-        throwExecption;
-    }
-    if ([filemgr removeItemAtPath:tableFolder error:NULL]) {
         throwExecption;
     }
     [tables removeObjectAtIndex:idx];
@@ -343,15 +376,20 @@ static NSMutableArray<NSString *> *tables;
     if (![tables containsObject:group_id])
     {
         SQL = [dataDir stringByAppendingPathComponent:group_id];
-        if ([filemgr fileExistsAtPath:SQL])
-        {
-            if (![filemgr removeItemAtPath:SQL error:NULL]) {
-                throwExecption;
-            }
+        if ([filemgr fileExistsAtPath:SQL]) {
+            [filemgr removeItemAtPath:SQL error:NULL];
         }
         pthread_mutex_lock(&mutex);
-        if (![filemgr createDirectoryAtPath:SQL withIntermediateDirectories:YES attributes:nil error:NULL]) {
+        BOOL isDir;
+        BOOL isExists = [filemgr fileExistsAtPath:SQL isDirectory:&isDir];
+        if (isExists && !isDir) {
             throwExecption;
+        }
+        if (!isExists)
+        {
+            if (![filemgr createDirectoryAtPath:SQL withIntermediateDirectories:YES attributes:nil error:NULL]) {
+                throwExecption;
+            }
         }
         SQL = [NSString stringWithFormat:@"create table if not exists `%@`(path text primary key unique not null, expire integer not null)", group_id];
         if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
@@ -379,7 +417,7 @@ static NSMutableArray<NSString *> *tables;
 {
     const sqlite3_int64 currentTimestamp = [[NSDate date] timeIntervalSince1970];
     const sqlite3_int64 queryTimestamp = [expire timeIntervalSince1970];
-    const sqlite3_int64 offsetTimestamp = currentTimestamp - queryTimestamp;
+    const sqlite3_int64 offsetTimestamp = queryTimestamp - currentTimestamp;
     if (offsetTimestamp > 0) {
         [self diskSetValue:value withKey:key inGroup:ID duration:offsetTimestamp];
     }
@@ -476,7 +514,7 @@ static NSMutableArray<NSString *> *tables;
         throwExecption;
     }
     SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:key];
-    if (![filemgr fileExistsAtPath:SQL]) {
+    if ([filemgr fileExistsAtPath:SQL]) {
         [filemgr removeItemAtPath:SQL error:NULL];
     }
     pthread_mutex_unlock(&mutex);
@@ -491,6 +529,7 @@ static NSMutableArray<NSString *> *tables;
     return mstring;
 }
 
++ (void)prepare{}
 + (void)initialize
 {
     pool = [NSMutableDictionary dictionaryWithCapacity:0xF];
@@ -524,8 +563,14 @@ static NSMutableArray<NSString *> *tables;
     }
     if ([filemgr fileExistsAtPath:dbPath isDirectory:&isDir])
     {
-        if (isDir) {
-            throwExecption;
+        if (isDir)// 存在此目录
+        {
+            if (![filemgr removeItemAtPath:dbPath error:NULL]) {
+                throwExecption;
+            }
+            if (![filemgr createFileAtPath:dbPath contents:nil attributes:nil]) {
+                throwExecption;
+            }
         }
     }
     else
@@ -537,40 +582,36 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_OK != sqlite3_open([dbPath UTF8String], &dbHandler)) {
         throwExecption;
     }
-    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self selector:@selector(appWillResignActive) name:@"UIApplicationWillResignActiveNotification" object:nil];
-    [center addObserver:self selector:@selector(appBecomeActive) name:@"UIApplicationDidBecomeActiveNotification" object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillTerminate) name:@"UIApplicationWillTerminateNotification" object:nil];
     sqlite3_stmt *stmt = NULL;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, "select tbl_name from sqlite_master where type = 'table'", -1, &stmt, NULL)) {
         throwExecption;
     }
-    while (SQLITE_ROW == sqlite3_step(stmt))
+    while (SQLITE_ROW == sqlite3_step(stmt))// 获取所有表名
     {
         const unsigned char *text = sqlite3_column_text(stmt, 0);
         [tables addObject:[NSString stringWithUTF8String:(const char *)text]];
     }
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
-    }// 获取了所有表名
-    const sqlite3_int64 timeStamp = [[NSDate date] timeIntervalSince1970];
+    }
+    const sqlite3_int64 currentTimeStamp = [[NSDate date] timeIntervalSince1970];
     for (signed long int i = 0, cnt = tables.count; i < cnt; i++)
     {
-        NSString *SQL = [NSString stringWithFormat:@"select path from `%@` where expire < %lld", tables[i], timeStamp];
+        NSString *SQL = [NSString stringWithFormat:@"select path from `%@` where expire < %lld", tables[i], currentTimeStamp];
         NSMutableArray<NSString *> *pathes = [NSMutableArray new];
         if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
             throwExecption;
         }
-        while (SQLITE_ROW == sqlite3_step(stmt))
+        while (SQLITE_ROW == sqlite3_step(stmt))//获取了一个表所有过期文件path
         {
             const unsigned char *text = sqlite3_column_text(stmt, 0);
             [pathes addObject:[NSString stringWithUTF8String:(const char *)text]];
         }
         if (SQLITE_OK != sqlite3_finalize(stmt)) {
             throwExecption;
-        }//获取了一个表所有过期文件path
-        
-        SQL = [NSString stringWithFormat:@"delete from `%@` where expire < %lld", tables[i], timeStamp];
+        }
+        SQL = [NSString stringWithFormat:@"delete from `%@` where expire < %lld", tables[i], currentTimeStamp];
         pthread_mutex_lock(&mutex);
         if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
             throwExecption;
@@ -579,7 +620,9 @@ static NSMutableArray<NSString *> *tables;
         for (signed long int j = 0, len = pathes.count; j < len; j++)
         {
             NSString *filePath = [tableDir stringByAppendingPathComponent:pathes[j]];
-            [filemgr removeItemAtPath:filePath error:NULL];
+            if ([filemgr fileExistsAtPath:filePath]) {
+                [filemgr removeItemAtPath:filePath error:NULL];
+            }
         }//删除了一个文件夹所有过期文件
         SQL = [NSString stringWithFormat:@"select count(*) from `%@`", tables[i]];
         if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
@@ -598,7 +641,9 @@ static NSMutableArray<NSString *> *tables;
             if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
                 throwExecption;
             }//删除了一个空表
-            [filemgr removeItemAtPath:tableDir error:NULL];//删除了一个空文件夹
+            if ([filemgr fileExistsAtPath:tableDir]) {
+                [filemgr removeItemAtPath:tableDir error:NULL];//删除了一个空文件夹
+            }
             [tables removeObjectAtIndex:i--];
             cnt--;
         }
@@ -606,15 +651,9 @@ static NSMutableArray<NSString *> *tables;
     }
 }
 
-+ (void)appWillResignActive
++ (void)appWillTerminate
 {
     if (SQLITE_OK != sqlite3_close(dbHandler)) {
-        throwExecption;
-    }
-}
-+ (void)appBecomeActive
-{
-    if (SQLITE_OK != sqlite3_open([dbPath UTF8String], &dbHandler)) {
         throwExecption;
     }
 }

@@ -9,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 __attribute__((objc_subclassing_restricted))
 @interface NSCachePool : NSObject
 
-+ (void)prepare;//请务必在application:didFinishLaunchingWithOptions:中调用此方法准备缓存环境。否则可能闪退
++ (void)prepare;//请务必在application:didFinishLaunchingWithOptions:中调用此方法准备缓存环境
 
 #pragma mark - 所有存取操作，组ID可以为nil，代表默认组
 + (nullable NSArray<id<NSCopying>> *)memoryGroups;
