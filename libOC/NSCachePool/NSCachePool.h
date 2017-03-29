@@ -11,7 +11,7 @@ __attribute__((objc_subclassing_restricted))
 
 + (void)prepare;//请务必在application:didFinishLaunchingWithOptions:中调用此方法准备缓存环境
 
-#pragma mark - 所有存取操作，组ID可以为nil，代表默认组
+#pragma mark - 所有存取操作，组ID可以为nil,@""，代表默认组
 + (nullable NSArray<id<NSCopying>> *)memoryGroups;
 + (nullable NSArray<id<NSCopying>> *)memoryKeysInGroup:(nullable id<NSCopying>)ID;
 + (nullable NSArray<id> *)memoryValuesInGroup:(nullable id<NSCopying>)ID;
@@ -23,7 +23,7 @@ __attribute__((objc_subclassing_restricted))
 + (nullable id)memoryValueWithKey:(id<NSCopying>)key inGroup:(nullable id<NSCopying>)ID;
 + (void)memoryRemoveValueWithKey:(id<NSCopying>)key inGroup:(nullable id<NSCopying>)ID;
 
-#pragma mark - disk系列方法，支持大数据量，大文件处理，需要SQLite(sqlite3.0)库支持。这里的ID不能包含任何 空白字符和控制字符
+#pragma mark - disk系列方法，支持大数据量，大文件处理，需要SQLite(sqlite3.0)库支持
 + (nullable NSArray<NSString *> *)diskGroups;
 + (nullable NSArray<NSString *> *)diskKeysInGroup:(nullable NSString *)ID;
 + (nullable NSArray<id<NSCoding>> *)diskValuesInGroup:(nullable NSString *)ID;

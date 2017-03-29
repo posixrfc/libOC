@@ -17,7 +17,12 @@
 #import <libOC/OCUniversal.h>
 #import <libOC/UIDispatcher.h>
 #import <libOC/NSCachePool.h>
+
 #import <libOC/UIColor+Ext.h>
+#import <libOC/UIImage+Ext.h>
+#import <libOC/NSArray+Ext.h>
+
+#import <libOC/List.hpp>
 
 //! Project version number for libOC.
 FOUNDATION_EXPORT double libOCVersionNumber;
