@@ -31,6 +31,7 @@ public:
     list_type stack_pop();
     
     void list_set(list_type, unsigned long);
+	void list_add(list_type, unsigned long);
     list_type list_get(unsigned long);
     list_type list_pop(unsigned long);
     

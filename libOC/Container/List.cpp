@@ -1,3 +1,6 @@
+#if defined(_WIN32) || defined(_WIN64)
+#include "stdafx.h"
+#endif
 #include "List.hpp"
 
 template <typename node_type>
@@ -90,6 +93,42 @@ template <class list_type>
 void List<list_type>::list_set(list_type value, unsigned long idx)
 {
     if (idx > this->count) {
+        throw "index invalid";
+    }
+    if (idx == this->count)
+    {
+        this->queue_push(value);
+        return;
+    }
+    unsigned long mid = this->count / 2;
+    if (idx < mid)
+    {
+        ListNode<list_type> *node = this->head;
+        for (unsigned long i = 0; i < mid; i++)
+        {
+            if (i == idx) {
+                break;
+            }
+            node = node->next;
+        }
+        node->value = value;
+        return;
+    }
+    ListNode<list_type> *node = this->tail;
+    for (unsigned long i = this->count - 1; i >= mid; i--)
+    {
+        if (i == idx) {
+            break;
+        }
+        node = node->prev;
+    }
+    node->value = value;
+}
+
+template <class list_type>
+void List<list_type>::list_add(list_type value, unsigned long idx)
+{
+	if (idx > this->count) {
         throw "index invalid";
     }
     if (idx == this->count)
