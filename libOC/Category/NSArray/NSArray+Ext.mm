@@ -3,74 +3,95 @@
 #import <Foundation/NSIndexPath.h>
 #import <stdlib.h>
 #import <malloc/malloc.h>
+#import "List.hpp"
 
 @implementation NSArray (Ext)
+
+- (NSArray *)reversedArray
+{
+    const signed long int len = self.count;
+    if (2 > len) {
+        return self;
+    }
+    id obj = [self firstObject];
+    List<void *> *list = new List<void *>();
+    list->queue_push((__bridge void *)obj);
+    for (signed long int i = 1; i < len; i++)
+    {
+        obj = [self objectAtIndex:i];
+        list->queue_push((__bridge void *)obj);
+    }
+    id objs[len];
+    for (signed long int i = 0; i < len; i++) {
+        objs[i] = (__bridge id)list->queue_pop();
+    }
+    delete list;
+    return [NSArray arrayWithObjects:objs count:len];
+}
 
 - (NSArray *)randomedArray
 {
     const signed long int len = self.count;
-    if (2l > len)
+    if (2l > len) {
         return self;
-    else
-    {
-        void **objs = [self objects];
-        id resObjs[len];
-        for (signed long int i = 0; i < len; i++)
-        {
-            signed long int limit = len - i;
-            signed long int idx = arc4random_uniform((u_int32_t)limit);
-            resObjs[i] = (__bridge id)(objs[idx]);
-            for (signed long int j = idx; j < limit - 1; j++)
-            {
-                objs[j] = objs[j + 1];
-            }
-        }
-        NSArray *res = [NSArray arrayWithObjects:resObjs count:len];
-        free(objs);
-        return res;
     }
+    id objs[len];
+    for (long i = 0; i < len; i++) {
+        objs[i] = [self objectAtIndex:i];
+    }
+    id resObjs[len];
+    for (signed long int i = 0; i < len; i++)
+    {
+        long limit = len - i;
+        long idx = arc4random_uniform((u_int32_t)limit);
+        resObjs[i] = objs[idx];
+        for (long j = idx; j < limit - 1; j++) {
+            objs[j] = objs[j + 1];
+        }
+    }
+    return [NSArray arrayWithObjects:resObjs count:len];
 }
 
 - (NSArray *)removeFirstObject
 {
     const NSUInteger len = self.count;
-    if (0l == len)
+    if (0l == len) {
         return self;
-    else if (1l == len)
+    }
+    if (1l == len) {
         return @[];
-    else
-        return [self subArrayFromIndex:1];
+    }
+    return [self subArrayFromIndex:1];
 }
 
-- (NSArray *)removeLaseObject
+- (NSArray *)removeLastObject
 {
     const NSUInteger len = self.count;
-    if (2l > len)
+    if (2l > len) {
         return [self removeFirstObject];
-    else
-        return [self subArrayToIndex:len - 1];
+    }
+    return [self subArrayToIndex:len - 1];
 }
 
 - (NSArray *)removeObject:(id)obj
 {
-    const NSUInteger len = self.count;
-    void **objs = [self objects];
-    id resObjs[len];
-    for (NSUInteger i = 0; i < len; ++i)
-    {
-        resObjs[i] = (__bridge id)objs[i];
+    if (nil == obj) {
+        return self;
     }
-    free(objs);
+    const NSUInteger len = self.count;
+    id objs[len];
+    for (long i = 0; i < len; i++) {
+        objs[i] = [self objectAtIndex:i];
+    }
     for (NSUInteger i = 0; i < len; i++)
     {
-        id objTmp = resObjs[i];
-        if (objTmp == obj)
+        id objTmp = objs[i];
+        if (objTmp == obj || [objTmp isEqual:obj])
         {
-            for (NSUInteger j = i; j < len - 1; j++)
-            {
-                resObjs[j] = resObjs[j + 1];
+            for (NSUInteger j = i; j < len - 1; j++) {
+                objs[j] = objs[j + 1];
             }
-            return [[self class] arrayWithObjects:resObjs count:len - 1];
+            return [[self class] arrayWithObjects:objs count:len - 1];
         }
     }
     return self;
@@ -78,67 +99,40 @@
 
 - (NSArray *)removeObject:(id)obj allOccurred:(BOOL)all
 {
-    const NSUInteger len = self.count;
-    void **objs = [self objects];
-    id resObjs[len];
-    for (NSUInteger i = 0; i < len; ++i)
-    {
-        resObjs[i] = (__bridge id)objs[i];
-    }
-    free(objs);
-    if (all)
-    {
-        NSUInteger limitLen = len;
-        for (NSUInteger i = 0; i < limitLen; i++)
-        {
-            id objTmp = resObjs[i];
-            if (objTmp == obj)
-            {
-                for (NSUInteger j = i; j < len - 1; j++)
-                {
-                    resObjs[j] = resObjs[j + 1];
-                }
-                limitLen--;
-            }
-        }
-        if (len == limitLen)
-            return self;
-        else
-            return [[self class] arrayWithObjects:resObjs count:limitLen];
-    }
-    else
-    {
-        for (NSUInteger i = 0; i < len; i++)
-        {
-            id objTmp = resObjs[i];
-            if (objTmp == obj)
-            {
-                for (NSUInteger j = i; j < len - 1; j++)
-                {
-                    resObjs[j] = resObjs[j + 1];
-                }
-                return [[self class] arrayWithObjects:resObjs count:len - 1];
-            }
-        }
+    if (nil == obj) {
         return self;
     }
-}
-
-- (NSArray *)removeObjectFromIndex:(NSUInteger)idx
-{
-    return [self subArrayToIndex:idx];
-}
-
-- (NSArray *)removeObjectToIndex:(NSUInteger)idx
-{
-    return [self subArrayFromIndex:idx];
+    if (!all) {
+        return [self removeObject:obj];
+    }
+    const NSUInteger len = self.count;
+    id objs[len];
+    for (NSUInteger i = 0; i < len; ++i) {
+        objs[i] = self[i];
+    }
+    NSUInteger limitLen = len;
+    for (NSUInteger i = 0; i < limitLen; i++)
+    {
+        id objTmp = objs[i];
+        if (objTmp == obj || [objTmp isEqual:obj])
+        {
+            for (NSUInteger j = i; j < limitLen - 1; j++) {
+                objs[j] = objs[j + 1];
+            }
+            limitLen--;
+        }
+    }
+    if (len == limitLen) {
+        return self;
+    }
+    return [[self class] arrayWithObjects:objs count:limitLen];
 }
 
 - (NSArray *)removeObjectInRange:(NSRange)range
 {
-    if (0l == range.length)
+    if (0l == range.length) {
         return self;
-    
+    }
     const NSUInteger len = self.count;
     NSUInteger limitLen = range.location + range.length;
     void **objs = [self objects];
@@ -248,50 +242,6 @@
         resObjs[i] = [self objectAtIndex:i];
     }
     return [NSArray arrayWithObjects:resObjs count:idx];
-}
-
-- (NSArray *)reversedArray
-{
-//    const signed long int len = self.count;
-//    if (2 > len)
-//        return self;
-//    else
-//    {
-//        id obj = [self firstObject];
-//        CY_Container *ctrHead = [[CY_Container alloc] initWithValue:obj next:nil];
-//        CY_Container *ctrTail = ctrHead;
-//        for (signed long int i = 1; i < len; i++)
-//        {
-//            obj = [self objectAtIndex:i];
-//            CY_Container *tmp = [[CY_Container alloc] initWithValue:obj next:nil];
-//            ctrTail.next = tmp;
-//            ctrTail = tmp;
-//        }
-//        id objs[len];
-//        for (signed long int i = 0; i < len; i++)
-//        {
-//            objs[len - 1 - i] = ctrHead.value;
-//            ctrHead = ctrHead.next;
-//        }
-//        return [NSArray arrayWithObjects:objs count:len];
-//    }
-    return nil;
-}
-
-- (void *)objects
-{
-    const signed long int len = self.count;
-    if (0l == len)
-        return NULL;
-    else
-    {
-        void **objs = (void *)malloc(len * sizeof(void *));
-        for (signed long int i = 0; i < len; i++)
-        {
-            objs[i] = (__bridge void *)([self objectAtIndex:i]);
-        }
-        return objs;
-    }
 }
 
 - (NSArray *)exchangeObjectAtIndex:(NSUInteger)idx1 withObjectAtIndex:(NSUInteger)idx2

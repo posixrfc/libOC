@@ -1,54 +1,19 @@
 #import <Foundation/Foundation.h>
+#import "OCUniversal.h"
 
 @interface NSArray (Ext)
 
-/**数组逆序*/
-- (nonnull NSArray *)reversedArray;
 
-/**
- *  全部对象,C数组，需要手动释放
- */
-- ( void * _Nonnull )objects;
+- (nonnull NSArray *)reversedArray;/**数组逆序*/
+- (nonnull NSArray *)randomedArray;/**随机排序*/
 
-/**
- *  随机排序
- */
-- (nonnull NSArray *)randomedArray;
+- (nonnull NSArray *)removeFirstObject;/**删除首元素*/
+- (nonnull NSArray *)removeLastObject;/**删除尾元素*/
 
-/**
- *  删除首元素
- */
-- (nonnull NSArray *)removeFirstObject;
+- (nonnull NSArray *)removeObject:(nonnull id)obj;/**删除首次出现的元素*/
+- (nonnull NSArray *)removeObject:(nonnull id)obj allOccurred:(BOOL)all;/**删除某元素，可以删除它的全部出现，如果第二个参数是yes*/
 
-/**
- *  删除尾元素
- */
-- (nonnull NSArray *)removeLaseObject;
-
-/**
- *  删除首次出现的元素
- */
-- (nonnull NSArray *)removeObject:(nonnull id)obj;
-
-/**
- *  删除某元素，可以删除它的全部出现，如果第二个参数是yes
- */
-- (nonnull NSArray *)removeObject:(nonnull id)obj allOccurred:(BOOL)all;
-
-/**
- *  删除从指定位置开始到末尾的元素
- */
-- (nonnull NSArray *)removeObjectFromIndex:(NSUInteger)idx;
-
-/**
- *  删除从头开始的制定元素
- */
-- (nonnull NSArray *)removeObjectToIndex:(NSUInteger)idx;
-
-/**
- *  删除置顶范围内的元素
- */
-- (nonnull NSArray *)removeObjectInRange:(NSRange)range;
+- (nonnull NSArray *)removeObjectInRange:(NSRange)range;/**删除置顶范围内的元素*/
 
 /**
  *  删除指定位置的元素

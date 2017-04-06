@@ -22,8 +22,6 @@
 #import <libOC/UIImage+Ext.h>
 #import <libOC/NSArray+Ext.h>
 
-#import <libOC/List.hpp>
-
 //! Project version number for libOC.
 FOUNDATION_EXPORT double libOCVersionNumber;
 

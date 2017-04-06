@@ -1,6 +1,10 @@
 #ifndef List_hpp
 #define List_hpp
 
+#ifndef __cplusplus
+#error no cpp support
+#endif
+
 template <typename node_type>
 class ListNode
 {
