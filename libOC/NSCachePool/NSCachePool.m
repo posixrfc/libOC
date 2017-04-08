@@ -179,7 +179,7 @@ static NSMutableArray<NSString *> *tables;
         throwExecption;
     }
     NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
-    NSMutableArray<NSNumber *> *expireKeys = [NSMutableArray new];
+    NSMutableArray<NSString *> *expireKeys = [NSMutableArray new];
     const sqlite3_int64 currentTimestamp = [[NSDate date] timeIntervalSince1970];
     while (SQLITE_ROW == sqlite3_step(stmt))
     {
@@ -259,7 +259,7 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
     }
-    NSMutableString *sql = [NSString stringWithFormat:@"delete from `%@` where path in (", group_id];
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"delete from `%@` where path in (", group_id];
     pthread_mutex_lock(&mutex);
     for (long i = 0, len = expirekeys.count; i < len; i++)
     {

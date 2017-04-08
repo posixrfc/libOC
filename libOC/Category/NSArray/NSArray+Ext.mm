@@ -130,53 +130,24 @@
 
 - (NSArray *)removeObjectInRange:(NSRange)range
 {
-    if (0l == range.length) {
-        return self;
-    }
     const NSUInteger len = self.count;
-    NSUInteger limitLen = range.location + range.length;
-    void **objs = [self objects];
-    id resObjs[len];
-    for (NSUInteger i = 0; i < len; ++i)
-    {
-        resObjs[i] = (__bridge id)objs[i];
+    const NSUInteger limitLen = range.location + range.length;
+    if (len < limitLen) {
+        throwExecption;
     }
-    free(objs);
-    
-    for (NSUInteger i = range.location; i < limitLen; i++)
-    {
-        for (NSUInteger j = i; j < len + range.location - i - 1; j++)
-        {
-            resObjs[j] = resObjs[j + 1];
-        }
+    id objs[len - limitLen];
+    for (NSUInteger i = 0; i < range.location; ++i) {
+        objs[i] = self[i];
     }
-    return [[self class] arrayWithObjects:resObjs count:len - limitLen];
+    for (NSUInteger i = limitLen; i < len; i++) {
+        objs[range.location++] = self[i];
+    }
+    return [[self class] arrayWithObjects:objs count:len - limitLen];
 }
 
 - (NSArray *)removeObjectAtIndex:(NSUInteger)idx
 {
-    const NSUInteger len = self.count;
-    void **objs = [self objects];
-    id resObjs[len];
-    for (NSUInteger i = 0; i < len; i++)
-    {
-        resObjs[i] = (__bridge id)objs[i];
-    }
-    free(objs);
-    for (NSUInteger i = idx; i < len - 1; i++)
-    {
-        resObjs[i] = resObjs[i + 1];
-    }
-    return [NSArray arrayWithObjects:resObjs count:len - 1];
-}
-
-- (NSArray *)removeObjectAtIndexes:(NSIndexSet *)idxSet
-{
-    __block NSArray * ret = self;
-    [idxSet enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
-        ret = [ret removeObjectAtIndex:idx];
-    }];
-    return ret;
+    return [self removeObjectInRange:(NSRange){idx, 1}];
 }
 
 - (NSArray *)removeObjectsInArray:(NSArray *)array
@@ -203,87 +174,59 @@
     return ret;
 }
 
-- (NSArray *)removeObject:(id)obj inRange:(NSRange)range
+- (NSArray *)cleanDuplicated
 {
-    NSArray *first = [self subArrayToIndex:range.location];
-    NSArray *last = [self subArrayFromIndex:range.location + range.length];
-    NSArray *operation = [self subarrayWithRange:range];
-    NSArray *ret = [operation removeObject:obj];
-    ret = [first addObjectsFromArray:ret];
-    return [ret addObjectsFromArray:last];
-}
-
-- (NSArray *)removeObject:(id)obj inRange:(NSRange)range allOccurred:(BOOL)all
-{
-    NSArray *first = [self subArrayToIndex:range.location];
-    NSArray *last = [self subArrayFromIndex:range.location + range.length];
-    NSArray *operation = [self subarrayWithRange:range];
-    NSArray *ret = [operation removeObject:obj allOccurred:all];
-    ret = [first addObjectsFromArray:ret];
-    return [ret addObjectsFromArray:last];
-}
-
-- (NSArray *)subArrayFromIndex:(NSUInteger)idx
-{
-    const NSUInteger len = self.count;
-    id resObjs[len - idx];
-    for (NSUInteger i = idx; i < len; i++)
-    {
-        resObjs[i - idx] = [self objectAtIndex:i];
+    NSUInteger len = self.count;
+    id objs[len];
+    for (NSUInteger i = 0; i < len; i++) {
+        objs[i] = self[i];
     }
-    return [NSArray arrayWithObjects:resObjs count:len - idx];
+    for (NSUInteger i = 0; i < len - 1; i++)
+    {
+        for (NSUInteger j = i + 1; j < len; j++)
+        {
+            if (objs[i] == objs[j] || [objs[i] isEqual:objs[j]])
+            {
+                for (NSUInteger k = j; k < len - 1; k++) {
+                    objs[k] = objs[k + 1];
+                }
+                j -= 1;
+                len -= 1;
+            }
+        }
+    }
+    return [[[self class] alloc] initWithObjects:objs count:len];
 }
 
-- (NSArray *)subArrayToIndex:(NSUInteger)idx
+- (NSArray *)mergedArrayWithArray:(NSArray *)array distincted:(BOOL)distinct
 {
-    id resObjs[idx];
-    for (NSUInteger i = 0; i < idx; i++)
-    {
-        resObjs[i] = [self objectAtIndex:i];
+    NSUInteger len0 = self.count, len1 = array.count;
+    NSUInteger len = len0 + len1;
+    id objs[len];
+    for (NSUInteger i = 0; i < len0; i++) {
+        objs[i] = self[i];
     }
-    return [NSArray arrayWithObjects:resObjs count:idx];
+    for (NSUInteger i = 0; i < len1; i++) {
+        objs[len0 + i] = array[i];
+    }
+    NSArray *ret = [[[self class] alloc] initWithObjects:objs count:len];
+    if (distinct) {
+        ret = [ret cleanDuplicated];
+    }
+    return ret;
 }
 
 - (NSArray *)exchangeObjectAtIndex:(NSUInteger)idx1 withObjectAtIndex:(NSUInteger)idx2
 {
-    const signed long int len = self.count;
-    void **objs = [self objects];
-    id resObjs[len];
-    for (signed long int i = 0; i < len; i++)
-    {
-        resObjs[i] = (__bridge id)(objs[i]);
+    NSInteger len = self.count;
+    id objs[len];
+    for (NSUInteger i = 0; i < len; i++) {
+        objs[i] = self[i];
     }
-    free(objs);
-    id tmp = resObjs[idx1];
-    resObjs[idx1] = resObjs[idx2];
-    resObjs[idx2] = tmp;
-    return [NSArray arrayWithObjects:resObjs count:len];
-}
-
-- (NSArray *)addObject:(id)obj
-{
-    const NSUInteger len = self.count;
-    void **objs = [self objects];
-    id resObjs[len + 1];
-    for (NSUInteger i = 0; i < len; i++)
-    {
-        resObjs[i] = (__bridge id)objs[i];
-    }
-    resObjs[len] = obj;
-    free(objs);
-    return [NSArray arrayWithObjects:resObjs count:len + 1];
-}
-
-- (NSArray *)addObjectsFromArray:(NSArray *)array
-{
-    const NSUInteger len = array.count;
-    NSArray *ret = self;
-    for (NSUInteger i = 0; i < len; i++)
-    {
-        id tmp = [array objectAtIndex:i];
-        ret = [ret addObject:tmp];
-    };
-    return ret;
+    id tmp = objs[idx1];
+    objs[idx1] = objs[idx2];
+    objs[idx2] = tmp;
+    return [NSArray arrayWithObjects:objs count:len];
 }
 
 - (NSArray *)insertObject:(id)obj atIndex:(NSUInteger)idx
@@ -301,8 +244,9 @@
         resObjs[i + 1] = (__bridge id)objs[i];
     }
     free(objs);
-    return [NSArray arrayWithObjects:resObjs count:len + 1];;
+    return [NSArray arrayWithObjects:resObjs count:len + 1];
 }
+- (NSArray *)insertObjects:(NSArray *)array atIndex:(NSUInteger)idx;
 
 - (NSArray *)insertObjects:(nonnull NSArray *)array atIndexes:(nonnull NSIndexSet *)idxSet
 {

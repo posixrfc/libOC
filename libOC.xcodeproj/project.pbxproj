@@ -19,7 +19,6 @@
 		D618C0AE1E89199800195545 /* UIDispatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0AC1E89199800195545 /* UIDispatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D618C0AF1E89199800195545 /* UIDispatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0AD1E89199800195545 /* UIDispatcher.m */; };
 		D618C0B31E891E4A00195545 /* OCUniversal.h in Headers */ = {isa = PBXBuildFile; fileRef = D618C0B11E891E4A00195545 /* OCUniversal.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D618C0B41E891E4A00195545 /* OCUniversal.m in Sources */ = {isa = PBXBuildFile; fileRef = D618C0B21E891E4A00195545 /* OCUniversal.m */; };
 		D65335C21E893B4E00ECF5C1 /* UIColor+Ext.h in Headers */ = {isa = PBXBuildFile; fileRef = D65335C01E893B4E00ECF5C1 /* UIColor+Ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D65335C31E893B4E00ECF5C1 /* UIColor+Ext.m in Sources */ = {isa = PBXBuildFile; fileRef = D65335C11E893B4E00ECF5C1 /* UIColor+Ext.m */; };
 		D6B00A501E8B350600690FBD /* List.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B00A4E1E8B350600690FBD /* List.cpp */; };
@@ -46,7 +45,6 @@
 		D618C0AC1E89199800195545 /* UIDispatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIDispatcher.h; sourceTree = "<group>"; };
 		D618C0AD1E89199800195545 /* UIDispatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIDispatcher.m; sourceTree = "<group>"; };
 		D618C0B11E891E4A00195545 /* OCUniversal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCUniversal.h; sourceTree = "<group>"; };
-		D618C0B21E891E4A00195545 /* OCUniversal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OCUniversal.m; sourceTree = "<group>"; };
 		D65335C01E893B4E00ECF5C1 /* UIColor+Ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Ext.h"; sourceTree = "<group>"; };
 		D65335C11E893B4E00ECF5C1 /* UIColor+Ext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+Ext.m"; sourceTree = "<group>"; };
 		D6B00A4E1E8B350600690FBD /* List.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = List.cpp; sourceTree = "<group>"; };
@@ -142,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				D618C0B11E891E4A00195545 /* OCUniversal.h */,
-				D618C0B21E891E4A00195545 /* OCUniversal.m */,
 			);
 			path = OCUniversal;
 			sourceTree = "<group>";
@@ -244,7 +241,7 @@
 				TargetAttributes = {
 					D618C07A1E890E8500195545 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = 62USKZ4LCB;
+						DevelopmentTeam = 735946DF3E;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -284,7 +281,6 @@
 				D618C0A01E8912C100195545 /* NSCachePool.m in Sources */,
 				D65335C31E893B4E00ECF5C1 /* UIColor+Ext.m in Sources */,
 				D6F476DD1E8A8B4800C044E9 /* UIImage+Ext.m in Sources */,
-				D618C0B41E891E4A00195545 /* OCUniversal.m in Sources */,
 				D6F476E71E8A902A00C044E9 /* NSArray+Ext.mm in Sources */,
 				D6B00A501E8B350600690FBD /* List.cpp in Sources */,
 				D618C0AF1E89199800195545 /* UIDispatcher.m in Sources */,
@@ -405,7 +401,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 62USKZ4LCB;
+				DEVELOPMENT_TEAM = 735946DF3E;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -426,7 +422,7 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 62USKZ4LCB;
+				DEVELOPMENT_TEAM = 735946DF3E;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
