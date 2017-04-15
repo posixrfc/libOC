@@ -4,11 +4,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface NSArray (Ext)
 
-- (NSArray *)reversedArray;/**数组逆序*/
 - (NSArray *)randomedArray;/**随机排序*/
-
-- (NSArray *)removeFirstObject;/**删除首元素*/
-- (NSArray *)removeLastObject;/**删除尾元素*/
 
 - (NSArray *)removeObject:(id)obj;/**删除首次出现的元素*/
 - (NSArray *)removeObject:(id)obj allOccurred:(BOOL)all;/**删除某元素，可以删除它的全部出现，如果第二个参数是yes*/
@@ -25,9 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**交换任意2元素顺序*/
 - (NSArray *)exchangeObjectAtIndex:(NSUInteger)idx1 withObjectAtIndex:(NSUInteger)idx2;
-
-- (NSArray *)insertObject:(id)obj atIndex:(NSUInteger)idx;
-- (NSArray *)insertObjects:(NSArray *)array atIndex:(NSUInteger)idx;
 
 
 /**

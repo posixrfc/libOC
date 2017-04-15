@@ -3,31 +3,9 @@
 #import <Foundation/NSIndexPath.h>
 #import <stdlib.h>
 #import <malloc/malloc.h>
-#import "List.hpp"
 
 @implementation NSArray (Ext)
 
-- (NSArray *)reversedArray
-{
-    const signed long int len = self.count;
-    if (2 > len) {
-        return self;
-    }
-    id obj = [self firstObject];
-    List<void *> *list = new List<void *>();
-    list->queue_push((__bridge void *)obj);
-    for (signed long int i = 1; i < len; i++)
-    {
-        obj = [self objectAtIndex:i];
-        list->queue_push((__bridge void *)obj);
-    }
-    id objs[len];
-    for (signed long int i = 0; i < len; i++) {
-        objs[i] = (__bridge id)list->queue_pop();
-    }
-    delete list;
-    return [NSArray arrayWithObjects:objs count:len];
-}
 
 - (NSArray *)randomedArray
 {
@@ -50,27 +28,6 @@
         }
     }
     return [NSArray arrayWithObjects:resObjs count:len];
-}
-
-- (NSArray *)removeFirstObject
-{
-    const NSUInteger len = self.count;
-    if (0l == len) {
-        return self;
-    }
-    if (1l == len) {
-        return @[];
-    }
-    return [self subArrayFromIndex:1];
-}
-
-- (NSArray *)removeLastObject
-{
-    const NSUInteger len = self.count;
-    if (2l > len) {
-        return [self removeFirstObject];
-    }
-    return [self subArrayToIndex:len - 1];
 }
 
 - (NSArray *)removeObject:(id)obj
@@ -229,36 +186,6 @@
     return [NSArray arrayWithObjects:objs count:len];
 }
 
-- (NSArray *)insertObject:(id)obj atIndex:(NSUInteger)idx
-{
-    const NSUInteger len = self.count;
-    void **objs = [self objects];
-    id resObjs[len + 1];
-    for (NSUInteger i = 0; i < idx; i++)
-    {
-        resObjs[i] = (__bridge id)objs[i];
-    }
-    resObjs[idx] = obj;
-    for (NSUInteger i = idx; i < len; i++)
-    {
-        resObjs[i + 1] = (__bridge id)objs[i];
-    }
-    free(objs);
-    return [NSArray arrayWithObjects:resObjs count:len + 1];
-}
-- (NSArray *)insertObjects:(NSArray *)array atIndex:(NSUInteger)idx;
-
-- (NSArray *)insertObjects:(nonnull NSArray *)array atIndexes:(nonnull NSIndexSet *)idxSet
-{
-    __block NSArray *ret = self;
-    __block NSArray *tmpArr = array;
-    [idxSet enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
-        id tmp = [tmpArr lastObject];
-        tmpArr = [tmpArr removeLaseObject];
-        ret = [ret insertObject:tmp atIndex:idx];
-    }];
-    return ret;
-}
 
 - (id)objectForIndexPath:(NSIndexPath *)ip
 {

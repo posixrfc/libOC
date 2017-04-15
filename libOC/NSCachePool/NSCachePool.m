@@ -1,5 +1,12 @@
 #import "NSCachePool.h"
 
+typedef NS_ENUM(unsigned char, StorageType) {
+    StorageTypeNone = 0,         // slow at beginning and end
+    StorageTypeObject,            // slow at beginning
+    StorageTypeString,           // slow at end
+    StorageTypeData
+};
+
 static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, id> *> *pool = nil;
 static NSString *general_key = nil;
 
@@ -173,7 +180,7 @@ static NSMutableArray<NSString *> *tables;
     if (![tables containsObject:group_id]) {
         return nil;
     }
-    NSString *SQL = [NSString stringWithFormat:@"select * from `%@`", group_id];
+    NSString *SQL = [NSString stringWithFormat:@"select `path`, `expire` from `%@`", group_id];
     sqlite3_stmt *stmt = NULL;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
@@ -241,15 +248,18 @@ static NSMutableArray<NSString *> *tables;
     }
     NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
     NSMutableArray<NSString *> *expirekeys = [NSMutableArray new];
+    NSMutableArray<NSNumber *> *validTypes = [NSMutableArray new];
     const sqlite3_int64 currentTimestamp = [[NSDate date] timeIntervalSince1970];
     while (SQLITE_ROW == sqlite3_step(stmt))
     {
         const unsigned char *text = sqlite3_column_text(stmt, 0);
         NSString *key = [NSString stringWithUTF8String:(const char *)text];
         sqlite3_int64 queryTimestamp = sqlite3_column_int64(stmt, 1);
+        unsigned char type = sqlite3_column_int(stmt, 2);
         if (queryTimestamp > currentTimestamp)
         {
             [validKeys addObject:key];
+            [validTypes addObject:@(type)];
         }
         else
         {
@@ -259,7 +269,7 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
     }
-    NSMutableString *sql = [NSMutableString stringWithFormat:@"delete from `%@` where path in (", group_id];
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"delete from `%@` where `path` in (", group_id];
     pthread_mutex_lock(&mutex);
     for (long i = 0, len = expirekeys.count; i < len; i++)
     {
@@ -282,10 +292,28 @@ static NSMutableArray<NSString *> *tables;
         return nil;
     }
     NSMutableArray<id<NSCoding>> *values = [NSMutableArray arrayWithCapacity:key_count];
+    NSString *tmp = [dataDir stringByAppendingPathComponent:group_id];
     for (long i = 0; i < key_count; i++)
     {
-        SQL = [[dataDir stringByAppendingPathComponent:group_id] stringByAppendingPathComponent:validKeys[i]];
-        [values addObject:[NSKeyedUnarchiver unarchiveObjectWithFile:SQL]];
+        SQL = [tmp stringByAppendingPathComponent:validKeys[i]];
+        switch ([validTypes[i] shortValue])
+        {
+            case StorageTypeData:
+                [values addObject:[NSData dataWithContentsOfFile:SQL]];
+                break;
+                
+            case StorageTypeString:
+                [values addObject:[NSString stringWithContentsOfFile:SQL encoding:NSUTF8StringEncoding error:NULL]];
+                break;
+                
+            case StorageTypeNone:
+            case StorageTypeObject:
+                [values addObject:[NSKeyedUnarchiver unarchiveObjectWithFile:SQL]];
+                break;
+                
+            default:
+                throwExecption;
+        }
     }
     return values;
 }
@@ -391,7 +419,7 @@ static NSMutableArray<NSString *> *tables;
                 throwExecption;
             }
         }
-        SQL = [NSString stringWithFormat:@"create table if not exists `%@`(path text primary key unique not null, expire integer not null)", group_id];
+        SQL = [NSString stringWithFormat:@"create table if not exists `%@`(`path` text primary key unique not null, `expire` integer not null, `type` integer not null)", group_id];
         if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
             throwExecption;
         }
@@ -403,11 +431,41 @@ static NSMutableArray<NSString *> *tables;
     const sqlite3_int64 maximalDuration = LONG_LONG_MAX - currentTimestamp;
     seconds = MIN(seconds, maximalDuration);
     const sqlite3_int64 queryTimestamp = currentTimestamp + seconds;
-    pthread_mutex_lock(&mutex);
-    if (![NSKeyedArchiver archiveRootObject:value toFile:SQL]) {
-        throwExecption;
+    StorageType type = StorageTypeNone;
+    if ([(id)value isKindOfClass:[NSString class]])
+    {
+        type = StorageTypeString;
     }
-    SQL = [NSString stringWithFormat:@"replace into `%@`(path, expire) values('%@', %lld)", group_id, key, queryTimestamp];
+    else if ([(id)value isKindOfClass:[NSData class]])
+    {
+        type = StorageTypeData;
+    }
+    else
+    {
+        type = StorageTypeObject;
+    }
+    pthread_mutex_lock(&mutex);
+    switch (type)
+    {
+        case StorageTypeNone:
+        case StorageTypeObject:
+            if (![NSKeyedArchiver archiveRootObject:value toFile:SQL]) {
+                throwExecption;
+            }
+            break;
+            
+        case StorageTypeData:
+            [(NSData *)value writeToFile:SQL atomically:YES];
+            break;
+            
+        case StorageTypeString:
+            [(NSString *)value writeToFile:SQL atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            break;
+            
+        default:
+            throwExecption;
+    }
+    SQL = [NSString stringWithFormat:@"replace into `%@`(`path`, `expire`, `type`) values('%@', %lld, %hhu)", group_id, key, queryTimestamp, type];
     if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
         throwExecption;
     }
@@ -445,7 +503,7 @@ static NSMutableArray<NSString *> *tables;
         return nil;
     }
     key = [self canonicalStringWithString:key];
-    NSString *SQL = [NSString stringWithFormat:@"select * from `%@` where path = '%@'", group_id, key];
+    NSString *SQL = [NSString stringWithFormat:@"select * from `%@` where `path` = '%@'", group_id, key];
     sqlite3_stmt *stmt = NULL;
     if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
@@ -453,6 +511,7 @@ static NSMutableArray<NSString *> *tables;
     if (SQLITE_ROW == sqlite3_step(stmt))
     {
         const sqlite3_int64 queryTimestamp = sqlite3_column_int64(stmt, 1);
+        StorageType type = sqlite3_column_int(stmt, 2);
         if (SQLITE_OK != sqlite3_finalize(stmt)) {
             throwExecption;
         }
@@ -472,13 +531,27 @@ static NSMutableArray<NSString *> *tables;
         }
         if (!isExists)
         {
-            SQL = [NSString stringWithFormat:@"delete from `%@` where path = '%@'", group_id, key];
+            SQL = [NSString stringWithFormat:@"delete from `%@` where `path` = '%@'", group_id, key];
             if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
                 throwExecption;
             }
             return nil;
         }
-        return [NSKeyedUnarchiver unarchiveObjectWithFile:SQL];
+        switch (type)
+        {
+            case StorageTypeNone:
+            case StorageTypeObject:
+                return [NSKeyedUnarchiver unarchiveObjectWithFile:SQL];
+                
+            case StorageTypeString:
+                return [NSString stringWithContentsOfFile:SQL encoding:NSUTF8StringEncoding error:NULL];
+                
+            case StorageTypeData:
+                return [NSData dataWithContentsOfFile:SQL];
+                
+            default:
+                throwExecption;
+        }
     }
     if (SQLITE_OK != sqlite3_finalize(stmt)) {
         throwExecption;
@@ -508,7 +581,7 @@ static NSMutableArray<NSString *> *tables;
         return;
     }
     key = [self canonicalStringWithString:key];
-    NSString *SQL = [NSString stringWithFormat:@"delete from `%@` where path = '%@'", group_id, key];
+    NSString *SQL = [NSString stringWithFormat:@"delete from `%@` where `path` = '%@'", group_id, key];
     pthread_mutex_lock(&mutex);
     if (SQLITE_OK != sqlite3_exec(dbHandler, [SQL UTF8String], NULL, NULL, NULL)) {
         throwExecption;
@@ -660,6 +733,7 @@ static NSMutableArray<NSString *> *tables;
 
 + (instancetype)allocWithZone:(struct _NSZone *)zone
 {
+    throwExecption;
     return nil;
 }
 
