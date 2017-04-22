@@ -723,18 +723,15 @@ static NSMutableArray<NSString *> *tables;
         pthread_mutex_unlock(&mutex);
     }
 }
-
 + (void)appWillTerminate
 {
     if (SQLITE_OK != sqlite3_close(dbHandler)) {
         throwExecption;
     }
 }
-
 + (instancetype)allocWithZone:(struct _NSZone *)zone
 {
     throwExecption;
     return nil;
 }
-
 @end

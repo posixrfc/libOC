@@ -27,10 +27,3 @@ extern UIColor *UIColorRGB(unsigned int hex_number);
 extern inline UIColor *UIColorRGBA(unsigned int hex_number);
 extern inline UIColor *UIColorHSL(unsigned int hex_number);
 extern inline UIColor *UIColorHSLA(unsigned int hex_number);
-
-
-@interface UIColor (Ext)
-
-+ (UIColor *)colorWithHex:(NSString *)hexColor DEPRECATED_MSG_ATTRIBUTE("Use +il_colorWithHexadecimalValue: instead");
-
-@end

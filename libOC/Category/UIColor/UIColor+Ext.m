@@ -38,7 +38,3 @@ extern inline UIColor *UIColorHSLA(unsigned int hex_number)
     color_field.aa = 0xFF & hex_number;
     return [UIColor colorWithHue:color_field.rh / 255.f saturation:color_field.gs / 255.f brightness:color_field.bl / 255.f alpha:color_field.aa / 255.f];
 }
-
-
-@implementation UIColor (Ext)
-@end
