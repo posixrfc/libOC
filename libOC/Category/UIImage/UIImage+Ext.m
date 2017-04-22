@@ -16,5 +16,15 @@
     const CGSize is = CGSizeMake(im.size.width * .5, im.size.height * .5);
     return [im resizableImageWithCapInsets:UIEdgeInsetsMake(is.height, is.width, is.height, is.width) resizingMode:UIImageResizingModeTile];
 }
-
++ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size
+{
+    CGRect rect = CGRectMake(0, 0, size.width, size.height);
+    UIGraphicsBeginImageContext(size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, color.CGColor);
+    CGContextFillRect(context, rect);
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
+}
 @end
