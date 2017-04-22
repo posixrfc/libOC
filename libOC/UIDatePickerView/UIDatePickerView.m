@@ -1,20 +1,12 @@
-//
-//  SatisfactionDatePicker.m
-//  ilearning
-//
-//  Created by coderf on 17/4/21.
-//  Copyright © 2017年 华为技术有限公司. All rights reserved.
-//
-
 #import "iClassDatePickerView.h"
 
-@implementation iClassDatePickerView
-//初始化方法
+@implementation UIDatePickerView
+
 - (instancetype)init
 {
     return [self initWithFrame:CGRectZero];
 }
-//初始化方法
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -44,7 +36,7 @@
     _crtdt = [NSDate date];
     return self;
 }
-//设置各控件位置尺寸
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];
@@ -74,17 +66,17 @@
     [_tableView selectRowAtIndexPath:indexpath animated:NO scrollPosition:UITableViewScrollPositionMiddle];
     [self tableView:_tableView didSelectRowAtIndexPath:indexpath];
 }
-//获取组数
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return 1;
 }
-//获取每组行数
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return 1024;
 }
-//获取每行显示图
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NSString"];
@@ -150,7 +142,7 @@
     introLab.attributedText = mas;
     return cell;
 }
-//选择一行
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.row == _selectedIndex) {
@@ -171,7 +163,7 @@
     NSDateComponents *cmps = [_cldr components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear | NSCalendarUnitWeekday fromDate:date];
     _selectDateAction(cmps);
 }
-//取消选择一行
+
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
