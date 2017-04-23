@@ -37,7 +37,7 @@
     }
     NSString *screenScale = [NSString stringWithFormat:@"%1.f", [[UIScreen mainScreen] scale]];
     realPath = [NSString stringWithFormat:@"%@@%@x", ocPath, screenScale];
-    NSArray<NSString *> *const fileExts = @[@"png", @"PNG", @"jpg", @"JPG", @"gif", @"GIF", @"jpeg", @"JPEG", @"tiff", @"TIFF"];
+    NSArray<NSString *> *const fileExts = @[@"png", @"PNG", @"jpg", @"JPG", @"gif", @"GIF", @"bmp", @"BMP", @"jpeg", @"JPEG", @"tiff", @"TIFF"];
     for (NSInteger i = 0, cnt = fileExts.count; i < cnt; i++)
     {
         NSString *imgPath = [bundle pathForResource:realPath ofType:[fileExts objectAtIndex:i]];
@@ -65,13 +65,17 @@
     return [[UIImage alloc] initWithContentsOfFile:[bundle pathForResource:ocPath ofType:nil]];
 }
 
-+ (UIImage *)resizableImageWithImageName:(NSString *)imageName
++ (UIImage *)resizableImageNamed:(const char *)path;
 {
-    UIImage *im = [UIImage imageNamed:imageName];
-    const CGSize is = CGSizeMake(im.size.width * .5, im.size.height * .5);
-    return [im resizableImageWithCapInsets:UIEdgeInsetsMake(is.height, is.width, is.height, is.width) resizingMode:UIImageResizingModeTile];
+    UIImage *img = [UIImage imageWithPath:path];
+	if (nil == img) {
+		return nil;
+	}
+    const CGSize imgSize = CGSizeMake(img.size.width * .5 - .5, img.size.height * .5 - .5);
+	UIEdgeInsets edge = UIEdgeInsetsMake(imgSize.height, imgSize.width, imgSize.height, imgSize.width);
+    return [img resizableImageWithCapInsets:edge resizingMode:UIImageResizingModeTile];
 }
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size
++ (UIImage *)imageWithSize:(CGSize)size fillColor:(UIColor *)color
 {
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
     UIGraphicsBeginImageContext(size);
