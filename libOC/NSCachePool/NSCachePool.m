@@ -182,7 +182,7 @@ static NSMutableArray<NSString *> *tables;
     }
     NSString *SQL = [NSString stringWithFormat:@"select `path`, `expire` from `%@`", group_id];
     sqlite3_stmt *stmt = NULL;
-    if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
+    if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
     }
     NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
@@ -243,7 +243,7 @@ static NSMutableArray<NSString *> *tables;
     }
     NSString *SQL = [NSString stringWithFormat:@"select * from `%@`", group_id];
     sqlite3_stmt *stmt = NULL;
-    if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
+    if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
     }
     NSMutableArray<NSString *> *validKeys = [NSMutableArray new];
@@ -336,7 +336,7 @@ static NSMutableArray<NSString *> *tables;
         throwExecption;
     }
     [tables removeAllObjects];
-    if (SQLITE_OK != sqlite3_open([dbPath UTF8String], &dbHandler)) {
+    if (SQLITE_OK != sqlite3_open_v2([dbPath UTF8String], &dbHandler, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, NULL)) {
         throwExecption;
     }
     pthread_mutex_unlock(&mutex);
@@ -505,7 +505,7 @@ static NSMutableArray<NSString *> *tables;
     key = [self canonicalStringWithString:key];
     NSString *SQL = [NSString stringWithFormat:@"select * from `%@` where `path` = '%@'", group_id, key];
     sqlite3_stmt *stmt = NULL;
-    if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
+    if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
         throwExecption;
     }
     if (SQLITE_ROW == sqlite3_step(stmt))
@@ -652,12 +652,12 @@ static NSMutableArray<NSString *> *tables;
             throwExecption;
         }
     }
-    if (SQLITE_OK != sqlite3_open([dbPath UTF8String], &dbHandler)) {
+    if (SQLITE_OK != sqlite3_open_v2([dbPath UTF8String], &dbHandler, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, NULL)) {
         throwExecption;
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillTerminate) name:@"UIApplicationWillTerminateNotification" object:nil];
     sqlite3_stmt *stmt = NULL;
-    if (SQLITE_OK != sqlite3_prepare(dbHandler, "select tbl_name from sqlite_master where type = 'table'", -1, &stmt, NULL)) {
+    if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, "select tbl_name from sqlite_master where type = 'table'", -1, &stmt, NULL)) {
         throwExecption;
     }
     while (SQLITE_ROW == sqlite3_step(stmt))// 获取所有表名
@@ -673,7 +673,7 @@ static NSMutableArray<NSString *> *tables;
     {
         NSString *SQL = [NSString stringWithFormat:@"select path from `%@` where expire < %lld", tables[i], currentTimeStamp];
         NSMutableArray<NSString *> *pathes = [NSMutableArray new];
-        if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
+        if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
             throwExecption;
         }
         while (SQLITE_ROW == sqlite3_step(stmt))//获取了一个表所有过期文件path
@@ -698,7 +698,7 @@ static NSMutableArray<NSString *> *tables;
             }
         }//删除了一个文件夹所有过期文件
         SQL = [NSString stringWithFormat:@"select count(*) from `%@`", tables[i]];
-        if (SQLITE_OK != sqlite3_prepare(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
+        if (SQLITE_OK != sqlite3_prepare_v2(dbHandler, [SQL UTF8String], -1, &stmt, NULL)) {
             throwExecption;
         }
         if (SQLITE_ROW != sqlite3_step(stmt)) {
