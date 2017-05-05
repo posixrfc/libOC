@@ -594,12 +594,18 @@ static NSMutableArray<NSString *> *tables;
 }
 + (NSString *)canonicalStringWithString:(NSString *)src
 {
-    const signed long int len = src.length;
-    NSMutableString *mstring = [[NSMutableString alloc] initWithCapacity:len + len];
-    for (long i = 0; i < len; i++) {
-        [mstring appendFormat:@"_%hX", [src characterAtIndex:i]];
-    }
-    return mstring;
+	NSData *originData = [src dataUsingEncoding:NSUTF8StringEncoding];
+	NSString *retString = [data base64EncodedStringWithOptions:0];
+	unichar uchr = (unichar)181;
+	NSString *tmpString = [NSString stringWithCharacters:&uchr length:1];
+    retString = [retString stringByReplacingOccurrencesOfString:@"+" withString:tmpString options:NSLiteralSearch range:NSMakeRange(0, retString.length)];
+	uchr = (unichar)230;
+	tmpString = [NSString stringWithCharacters:&uchr length:1];
+	retString = [retString stringByReplacingOccurrencesOfString:@"/" withString:tmpString options:NSLiteralSearch range:NSMakeRange(0, retString.length)];
+	uchr = (unichar)231;
+	tmpString = [NSString stringWithCharacters:&uchr length:1];
+	retString = [retString stringByReplacingOccurrencesOfString:@"=" withString:tmpString options:NSLiteralSearch range:NSMakeRange(0, retString.length)];
+    return retString;
 }
 
 + (void)prepare{}
